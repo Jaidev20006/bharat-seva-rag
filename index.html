@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bharat Seva — AI Government Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --saffron: #FF6600; --saffron-light: #FF8C00; --saffron-pale: #FFF3E8;
+            --green: #138808; --green-pale: #F0FAF0;
+            --navy: #0A1628; --white: #FFFFFF; --cream: #FFFDF9;
+            --gray: #6B7280; --border: #E5E7EB;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--cream); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .header-stripe { height: 4px; background: linear-gradient(90deg, var(--saffron) 33.33%, var(--white) 33.33%, var(--white) 66.66%, var(--green) 66.66%); flex-shrink: 0; }
+        header { background: var(--white); box-shadow: 0 2px 16px rgba(0,0,0,0.08); padding: 0 20px; flex-shrink: 0; }
+        .header-inner { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; gap: 12px; }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .emblem { width: 44px; height: 44px; background: linear-gradient(135deg, var(--saffron), var(--saffron-light)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 4px 12px rgba(255,102,0,0.3); }
+        .brand-text h1 { font-family: 'Yatra One', cursive; font-size: 20px; color: var(--navy); }
+        .brand-text p { font-size: 10px; color: var(--gray); font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; }
+        .header-right { display: flex; align-items: center; gap: 10px; }
+        .lang-wrap { display: flex; align-items: center; gap: 6px; background: var(--cream); border: 1.5px solid var(--border); border-radius: 9px; padding: 6px 12px; }
+        #lang-select { border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; color: var(--navy); cursor: pointer; outline: none; }
+        .status-badge { display: flex; align-items: center; gap: 5px; background: var(--green-pale); border: 1.5px solid rgba(19,136,8,0.2); border-radius: 9px; padding: 6px 12px; font-size: 11px; font-weight: 600; color: var(--green); }
+        .pulse-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+        .app-body { display: flex; flex: 1; overflow: hidden; }
+
+        /* SIDEBAR */
+        .sidebar { width: 220px; flex-shrink: 0; background: var(--white); border-right: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; }
+        .sidebar-section { padding: 14px; border-bottom: 1px solid var(--border); }
+        .sidebar-title { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gray); margin-bottom: 10px; }
+        .service-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .service-btn { background: var(--cream); border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 6px; cursor: pointer; text-align: center; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+        .service-btn:hover, .service-btn.active { border-color: var(--saffron); background: var(--saffron-pale); transform: translateY(-1px); }
+        .service-btn .icon { font-size: 18px; display: block; margin-bottom: 3px; }
+        .service-btn .label { font-size: 9px; font-weight: 600; color: var(--navy); line-height: 1.3; }
+        .helpline-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 11px; }
+        .helpline-row .num { font-family: 'DM Mono', monospace; font-weight: 700; color: var(--green); font-size: 12px; }
+        .helpline-row .desc { color: var(--gray); }
+
+        /* CHAT */
+        .chat-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+        .chat-header { background: linear-gradient(135deg, var(--saffron), var(--saffron-light)); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .chat-header-left { display: flex; align-items: center; gap: 10px; }
+        .bot-avatar { width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .bot-info h2 { font-size: 13px; font-weight: 700; color: white; }
+        .bot-info p { font-size: 9px; color: rgba(255,255,255,0.85); }
+        .chat-header-right { display: flex; gap: 6px; align-items: center; }
+        .hbtn { width: 30px; height: 30px; background: rgba(255,255,255,0.15); border: none; border-radius: 8px; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+        .hbtn:hover { background: rgba(255,255,255,0.28); }
+        .live-badge { display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.15); border-radius: 7px; padding: 3px 9px; font-size: 9px; font-weight: 700; color: white; }
+        .live-dot { width: 5px; height: 5px; background: #90EE90; border-radius: 50%; animation: pulse 1s infinite; }
+        #messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
+        #messages::-webkit-scrollbar { width: 4px; }
+        #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        .msg-row { display: flex; flex-direction: column; animation: fadeUp 0.3s ease; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .msg-row.user { align-items: flex-end; }
+        .msg-row.bot { align-items: flex-start; }
+        .bubble { max-width: 88%; padding: 11px 14px; font-size: 13px; line-height: 1.72; white-space: pre-wrap; }
+        .bot .bubble { background: var(--green-pale); border: 1px solid rgba(19,136,8,0.12); border-radius: 4px 16px 16px 16px; color: #1a2a1a; }
+        .user .bubble { background: linear-gradient(135deg, var(--saffron), var(--saffron-light)); border-radius: 16px 4px 16px 16px; color: white; }
+        .bubble a { color: #0057B8; font-weight: 600; text-decoration: underline; word-break: break-all; }
+        .msg-meta { font-size: 9px; color: var(--gray); margin-top: 3px; padding: 0 3px; font-family: 'DM Mono', monospace; }
+        .suggestions { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; max-width: 88%; }
+        .chip { background: white; border: 1.5px solid var(--saffron); color: var(--saffron); padding: 4px 11px; border-radius: 20px; font-size: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .chip:hover { background: var(--saffron); color: white; }
+        .typing-bubble { background: var(--green-pale); border: 1px solid rgba(19,136,8,0.12); border-radius: 4px 16px 16px 16px; padding: 12px 16px; display: flex; gap: 4px; align-items: center; }
+        .tdot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: bounce 1.2s infinite; opacity: 0.7; }
+        .tdot:nth-child(2){animation-delay:0.2s} .tdot:nth-child(3){animation-delay:0.4s}
+        @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+        .chat-footer { border-top: 1px solid var(--border); padding: 10px 14px; background: var(--white); flex-shrink: 0; }
+        .input-row { display: flex; gap: 7px; align-items: center; }
+        #user-input { flex: 1; font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 12px; outline: none; background: var(--cream); color: var(--navy); transition: all 0.2s; }
+        #user-input:focus { border-color: var(--saffron); box-shadow: 0 0 0 3px rgba(255,102,0,0.1); background: white; }
+        #user-input::placeholder { color: #B0B8C4; }
+        #voice-btn { width: 40px; height: 40px; flex-shrink: 0; background: white; border: 1.5px solid var(--border); border-radius: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.2s; }
+        #voice-btn.listening { background: #FF3B30 !important; border-color: #FF3B30 !important; animation: voicePulse 1s infinite; }
+        @keyframes voicePulse { 0%,100%{box-shadow:0 0 0 4px rgba(255,59,48,0.2)} 50%{box-shadow:0 0 0 10px rgba(255,59,48,0.04)} }
+        #send-btn { width: 40px; height: 40px; flex-shrink: 0; background: linear-gradient(135deg, var(--saffron), var(--saffron-light)); border: none; border-radius: 11px; cursor: pointer; font-size: 16px; color: white; transition: all 0.15s; box-shadow: 0 3px 10px rgba(255,102,0,0.35); display: flex; align-items: center; justify-content: center; }
+        #send-btn:hover { transform: scale(1.06); }
+        #voice-status { display: none; text-align: center; font-size: 10px; color: #FF3B30; font-weight: 600; margin-top: 5px; }
+        #voice-status.show { display: block; }
+        .chat-hint { font-size: 10px; color: var(--gray); text-align: center; margin-top: 5px; }
+
+        /* LIVE PANEL */
+        .live-panel { width: 420px; flex-shrink: 0; border-left: 1px solid var(--border); display: flex; flex-direction: column; background: #f8f9fa; transition: width 0.3s ease; }
+        .live-panel.collapsed { width: 0; overflow: hidden; }
+        .live-panel-header { padding: 10px 14px; background: var(--navy); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .live-panel-header h3 { color: white; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        .lpbtn { background: rgba(255,255,255,0.15); border: none; color: white; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 600; cursor: pointer; }
+        .lpbtn:hover { background: rgba(255,255,255,0.28); }
+        .url-bar { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: white; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .url-bar-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; animation: pulse 1.5s infinite; }
+        #live-url-display { flex: 1; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--navy); background: #f3f4f6; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #open-in-tab { background: var(--saffron); color: white; border: none; padding: 4px 12px; border-radius: 6px; font-size: 10px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        #iframe-loader { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 12px; padding: 30px; text-align: center; }
+        .loader-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--saffron); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loader-text { font-size: 12px; color: var(--gray); }
+        .loader-url { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--saffron); }
+        #iframe-blocked { display: none; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 14px; padding: 24px; text-align: center; }
+        .block-icon { font-size: 48px; }
+        #iframe-blocked h4 { font-size: 15px; font-weight: 700; color: var(--navy); }
+        #iframe-blocked p { font-size: 12px; color: var(--gray); line-height: 1.6; }
+        .open-btn-big { background: linear-gradient(135deg, var(--saffron), var(--saffron-light)); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(255,102,0,0.3); }
+        .steps-preview { background: var(--green-pale); border: 1px solid rgba(19,136,8,0.15); border-radius: 12px; padding: 14px; text-align: left; width: 100%; }
+        .steps-preview h5 { font-size: 11px; font-weight: 700; color: var(--green); margin-bottom: 8px; }
+        .step-item { font-size: 11px; color: var(--navy); margin-bottom: 5px; display: flex; gap: 6px; }
+        .step-num { color: var(--saffron); font-weight: 700; flex-shrink: 0; }
+        #live-iframe { display: none; flex: 1; border: none; width: 100%; }
+        #panel-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 10px; padding: 24px; text-align: center; }
+        #panel-empty .empty-icon { font-size: 48px; opacity: 0.3; }
+        #panel-empty h4 { font-size: 14px; font-weight: 600; color: var(--gray); }
+        #panel-empty p { font-size: 11px; color: var(--gray); line-height: 1.6; }
+        .footer-stripe { height: 3px; background: linear-gradient(90deg, var(--saffron) 33.33%, var(--white) 33.33%, var(--white) 66.66%, var(--green) 66.66%); flex-shrink: 0; }
+        @media (max-width: 900px) { .sidebar { display: none; } .live-panel { width: 0; overflow: hidden; } }
+    
+    /* ── Dark Mode ─────────────────────────────────────────── */
+    body.dark { background:#0d1117 !important; color:#e6edf3 !important; }
+    body.dark header { background:#161b22 !important; border-color:#30363d !important; }
+    body.dark .brand-text h1 { color:#e6edf3 !important; }
+    body.dark .brand-text p  { color:#8b949e !important; }
+    body.dark .lang-wrap     { background:#161b22 !important; border-color:#30363d !important; }
+    body.dark #lang-select   { background:#161b22 !important; color:#e6edf3 !important; }
+    body.dark .status-badge  { background:#0d2818 !important; color:#3fb950 !important; }
+    body.dark .hbtn          { background:#21262d !important; border-color:#30363d !important; color:#e6edf3 !important; }
+    body.dark .sidebar        { background:#161b22 !important; border-color:#30363d !important; }
+    body.dark .sidebar-section{ border-color:#30363d !important; }
+    body.dark .sidebar-title  { color:#8b949e !important; }
+    body.dark .service-btn    { background:#21262d !important; border-color:#30363d !important; }
+    body.dark .service-btn .label { color:#e6edf3 !important; }
+    body.dark .helpline-row .num  { color:#e6edf3 !important; }
+    body.dark .helpline-row .desc { color:#8b949e !important; }
+    body.dark .chat-panel     { background:#0d1117 !important; }
+    body.dark .chat-header    { background:#161b22 !important; border-color:#30363d !important; }
+    body.dark .chat-header h2 { color:#e6edf3 !important; }
+    body.dark .chat-header p  { color:#8b949e !important; }
+    body.dark #messages       { background:#0d1117 !important; }
+    body.dark .chat-footer    { background:#161b22 !important; border-color:#30363d !important; }
+    body.dark .input-row      { background:#21262d !important; border-color:#30363d !important; }
+    body.dark #user-input     { background:#21262d !important; color:#e6edf3 !important; }
+    body.dark #user-input::placeholder { color:#8b949e !important; }
+    body.dark .footer-bar     { color:#8b949e !important; }
+    body.dark .bubble         { background:#161b22 !important; color:#e6edf3 !important; border-color:#30363d !important; }
+    body.dark .msg-row.user .bubble { background:#1f3a5f !important; color:#e6edf3 !important; }
+    body.dark .msg-meta       { color:#8b949e !important; }
+    body.dark .typing-bubble  { background:#161b22 !important; border-color:#30363d !important; }
+    body.dark .tdot           { background:#8b949e !important; }
+    body.dark .chip           { background:#21262d !important; color:#fb923c !important; border-color:#fb923c !important; }
+    body.dark .live-panel        { background:#161b22 !important; border-color:#30363d !important; }
+    body.dark .live-panel-header { background:#0d1117 !important; border-color:#30363d !important; }
+    body.dark #live-panel-title  { color:#e6edf3 !important; }
+    body.dark #live-url-display  { color:#8b949e !important; }
+    body.dark .live-panel-btn    { background:#21262d !important; border-color:#30363d !important; color:#e6edf3 !important; }
+    body.dark #iframe-blocked    { background:#161b22 !important; }
+    body.dark .chat-hint { color:#8b949e !important; }
+
+    </style>
+</head>
+<body>
+<div class="header-stripe"></div>
+<header>
+    <div class="header-inner">
+        <div class="brand">
+            <div class="emblem">🏛️</div>
+            <div class="brand-text">
+                <h1>Bharat Seva</h1>
+                <p>AI Government Assistant · भारत सेवा</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="lang-wrap">
+                <span>🌐</span>
+                <select id="lang-select" onchange="changeLanguage()">
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="ta">தமிழ்</option>
+                    <option value="te">తెలుగు</option>
+                    <option value="bn">বাংলা</option>
+                    <option value="mr">मराठी</option>
+                    <option value="gu">ગુજરાતી</option>
+                    <option value="kn">ಕನ್ನಡ</option>
+                    <option value="ml">മലയാളം</option>
+                </select>
+            </div>
+            <div class="status-badge" id="rag-status">
+                <div class="pulse-dot" id="status-dot"></div>
+                <span id="status-text">Connecting...</span>
+            </div>
+            <button type="button" style="background:var(--cream);border:1.5px solid var(--border);border-radius:9px;padding:0 12px;height:34px;font-size:11px;font-weight:600;color:var(--navy);cursor:pointer;" onclick="toggleLivePanel()" id="panel-toggle-btn">🌐 Hide Live</button>
+        </div>
+    </div>
+</header>
+
+<div class="app-body">
+    <aside class="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-title">Quick Services</div>
+            <div class="service-grid">
+                <button class="service-btn" id="btn-aadhaar" onclick="selectService('aadhaar_help')"><span class="icon">🪪</span><span class="label">Aadhaar</span></button>
+                <button class="service-btn" id="btn-pan" onclick="selectService('pan_card_help')"><span class="icon">💳</span><span class="label">PAN Card</span></button>
+                <button class="service-btn" id="btn-passport" onclick="selectService('passport_help')"><span class="icon">🛂</span><span class="label">Passport</span></button>
+                <button class="service-btn" id="btn-ration" onclick="selectService('ration_card_help')"><span class="icon">🍚</span><span class="label">Ration Card</span></button>
+                <button class="service-btn" id="btn-voter" onclick="selectService('voter_id_help')"><span class="icon">🗳️</span><span class="label">Voter ID</span></button>
+                <button class="service-btn" id="btn-gst" onclick="selectService('gst_help')"><span class="icon">📊</span><span class="label">GST</span></button>
+                <button class="service-btn" id="btn-dl" onclick="selectService('driving_license_help')"><span class="icon">🚗</span><span class="label">Driving DL</span></button>
+                <button class="service-btn" id="btn-yojana" onclick="selectService('pm_yojana_help')"><span class="icon">🏛️</span><span class="label">PM Yojanas</span></button>
+                <button class="service-btn" id="btn-digi" onclick="selectService('digilocker_help')" style="grid-column:span 2"><span class="icon">📱</span><span class="label">DigiLocker</span></button>
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-title">🆘 Emergency Helplines</div>
+            <div class="helpline-row"><span>🚔</span><span class="num">100</span><span class="desc">Police</span></div>
+            <div class="helpline-row"><span>🚑</span><span class="num">108</span><span class="desc">Ambulance</span></div>
+            <div class="helpline-row"><span>🔥</span><span class="num">101</span><span class="desc">Fire</span></div>
+            <div class="helpline-row"><span>👩</span><span class="num">1091</span><span class="desc">Women</span></div>
+            <div class="helpline-row"><span>👦</span><span class="num">1098</span><span class="desc">Child</span></div>
+            <div class="helpline-row"><span>🏥</span><span class="num">104</span><span class="desc">Health</span></div>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-title">🚀 Smart Tools</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+                <button onclick="openTool('checklist')"   style="background:#fff8f0;border:1.5px solid #fed7aa;border-radius:10px;padding:9px 12px;cursor:pointer;text-align:left;font-size:11px;font-weight:600;color:#92400e;">✅ Document Checklist</button>
+                <button onclick="openTool('status')"      style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:9px 12px;cursor:pointer;text-align:left;font-size:11px;font-weight:600;color:#1e40af;">🔍 Track Application</button>
+                <button onclick="openTool('eligibility')" style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:9px 12px;cursor:pointer;text-align:left;font-size:11px;font-weight:600;color:#065f46;">🎯 Eligibility Checker</button>
+                <button onclick="openTool('recommender')" style="background:#fdf4ff;border:1.5px solid #e9d5ff;border-radius:10px;padding:9px 12px;cursor:pointer;text-align:left;font-size:11px;font-weight:600;color:#6b21a8;">🏛️ Scheme Recommender</button>
+                <button onclick="openQRTool()"            style="background:#fff0f0;border:1.5px solid #fecaca;border-radius:10px;padding:9px 12px;cursor:pointer;text-align:left;font-size:11px;font-weight:600;color:#991b1b;">🔲 QR Code Generator</button>
+            </div>
+        </div>
+        <div class="sidebar-section" style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;margin:10px;border:none;">
+            <div style="color:rgba(255,255,255,0.7);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">✨ AI Features</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.9);line-height:1.8;">🧠 RAG AI — real govt data<br>🌐 Live website preview<br>🎤 Voice input & output<br>💡 Smart suggestions<br>🌍 9 regional languages<br>🔗 Official working links</div>
+        </div>
+    </aside>
+
+    <div class="chat-panel">
+        <div class="chat-header">
+            <div class="chat-header-left">
+                <div class="bot-avatar">🤖</div>
+                <div class="bot-info">
+                    <h2>Bharat Seva AI</h2>
+                    <p>RAG-Powered · Live Web · Voice · 9 Languages</p>
+                </div>
+            </div>
+            <div class="chat-header-right">
+                <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+                <button type="button" class="hbtn" id="speaker-btn" onclick="toggleVoiceOutput()">🔊</button>
+                <button type="button" class="hbtn" id="dark-btn" onclick="toggleDarkMode()" title="Dark Mode">🌙</button>
+                <button type="button" class="hbtn" onclick="openQRTool()" title="QR Generator">🔲</button>
+                <button type="button" class="hbtn" onclick="clearChat()">🗑️</button>
+                <button type="button" class="hbtn" onclick="showVideo()" title="Watch Tutorial">📹</button>
+            </div>
+        </div>
+        <div id="messages"></div>
+        <div class="chat-footer">
+            <div class="input-row">
+                <input type="text" id="user-input" placeholder="Ask anything about Indian government services..." onkeydown="if(event.key==='Enter'){event.preventDefault();sendMessage();}"/>
+                <button type="button" id="voice-btn" onclick="toggleVoice()">🎤</button>
+                <button type="button" id="send-btn" onclick="sendMessage()">➤</button>
+            </div>
+            <div id="voice-status">🔴 Listening... speak now</div>
+            <div class="chat-hint">💡 Click a service button · 🎤 Voice input · 9 languages · 🧠 RAG AI</div>
+        </div>
+    </div>
+
+    <div class="live-panel" id="live-panel">
+        <div class="live-panel-header">
+            <h3><div class="live-dot"></div> <span id="live-panel-title">Official Website</span></h3>
+            <div style="display:flex;gap:6px;">
+                <button type="button" class="lpbtn" onclick="refreshIframe()">↻ Refresh</button>
+                <button type="button" class="lpbtn" onclick="openInTab()">↗ Open</button>
+            </div>
+        </div>
+        <div class="url-bar">
+            <div class="url-bar-dot"></div>
+            <div id="live-url-display">Select a service to load official website</div>
+            <button type="button" id="open-in-tab" onclick="openInTab()">Open ↗</button>
+        </div>
+        <div id="panel-empty">
+            <div class="empty-icon">🌐</div>
+            <h4>Live Website Preview</h4>
+            <p>Click any service button on the left to load the official government website here — side by side with the chat!</p>
+        </div>
+        <div id="iframe-loader" style="display:none">
+            <div class="loader-spinner"></div>
+            <div class="loader-text">Loading official website...</div>
+            <div class="loader-url" id="loading-url-text"></div>
+        </div>
+        <div id="iframe-blocked" style="display:none;flex-direction:column;">
+            <div class="block-icon">🔒</div>
+            <h4 id="blocked-title">Website Opens Separately</h4>
+            <p id="blocked-desc">This government website blocks embedding. Open it in a new tab — your chat stays here!</p>
+            <button type="button" class="open-btn-big" onclick="openInTab()">🌐 Open Official Website</button>
+            <div class="steps-preview"><h5>📋 Follow these steps on the website:</h5><div id="steps-list"></div></div>
+        </div>
+        <iframe id="live-iframe" sandbox="allow-same-origin allow-scripts allow-forms allow-popups" title="Official Government Website"></iframe>
+    </div>
+</div>
+<div class="footer-stripe"></div>
+
+<script>
+// ── Config ─────────────────────────────────────────────────────
+const RAG_URL = window.location.origin === 'null' || window.location.origin === 'file://' ? 'http://localhost:8000' : window.location.origin;
+
+const services = {
+    aadhaar_help:        { name:'Aadhaar Card',      url:'https://myaadhaar.uidai.gov.in',           icon:'🪪', btnId:'btn-aadhaar', steps:['Go to myaadhaar.uidai.gov.in','Click "Update Aadhaar"','Login with Aadhaar + OTP','Select field to update','Upload documents & pay ₹50'], suggestions:['Documents needed for Aadhaar?','Aadhaar update rejected?','How to link Aadhaar with mobile?','How to download e-Aadhaar?'] },
+    pan_card_help:       { name:'PAN Card',           url:'https://www.incometax.gov.in/iec/foportal', icon:'💳', btnId:'btn-pan',     steps:['Go to incometax.gov.in','Click "Instant e-PAN"','Enter Aadhaar number','Verify OTP','Download PAN instantly'],               suggestions:['Instant e-PAN vs physical PAN?','PAN card lost?','Link PAN with Aadhaar?','PAN for NRI?'] },
+    passport_help:       { name:'Passport',           url:'https://passportindia.gov.in',              icon:'🛂', btnId:'btn-passport', steps:['Go to passportindia.gov.in','Register / Login','Apply for Fresh Passport','Pay fee & book PSK appointment','Visit PSK with documents'],  suggestions:['Tatkal vs Normal passport?','Documents for first passport?','Passport for child?','Police verification process?'] },
+    ration_card_help:    { name:'Ration Card',        url:'https://nfsa.gov.in',                       icon:'🍚', btnId:'btn-ration',   steps:['Visit nfsa.gov.in','Select your State','Check RC details','Visit Tehsil office to apply','Submit Aadhaar + documents'],   suggestions:['Types of ration cards?','Add family member?','Transfer ration card?','BPL card eligibility?'] },
+    voter_id_help:       { name:'Voter ID',           url:'https://voters.eci.gov.in',                 icon:'🗳️', btnId:'btn-voter',    steps:['Go to voters.eci.gov.in','Click "Register as New Voter"','Fill Form 6','Upload photo + address proof','Download e-EPIC instantly'],  suggestions:['Check voter list?','NRI voter registration?','Name correction in voter ID?','Download e-EPIC?'] },
+    gst_help:            { name:'GST Registration',   url:'https://www.gst.gov.in',                    icon:'📊', btnId:'btn-gst',      steps:['Go to gst.gov.in','Services → New Registration','Fill Part A with PAN + OTP','Fill Part B business details','Submit → GSTIN in 7 days'],  suggestions:['GST for freelancers?','GST return deadlines?','GST exemption limit?','Composition scheme?'] },
+    driving_license_help:{ name:'Driving License',    url:'https://parivahan.gov.in/parivahan',        icon:'🚗', btnId:'btn-dl',       steps:['Go to parivahan.gov.in','Driving Licence Services','Apply for Learner Licence','Pay ₹200 & book RTO test','Pass test → Get LL same day'],  suggestions:['LL validity?','Documents for driving test?','International driving permit?','DL renewal?'] },
+    pm_yojana_help:      { name:'PM Yojanas',         url:'https://www.india.gov.in',                  icon:'🏛️', btnId:'btn-yojana',   steps:['Go to india.gov.in','Browse all government schemes','Check eligibility','Apply via official scheme portal','Track application status'],  suggestions:['PM Kisan eligibility?','Ayushman Bharat hospitals?','MUDRA loan?','PM Awas subsidy?'] },
+    digilocker_help:     { name:'DigiLocker',         url:'https://www.digilocker.gov.in',             icon:'📱', btnId:'btn-digi',     steps:['Go to digilocker.gov.in','Sign Up with mobile OTP','Set 6-digit PIN','Link Aadhaar number','Access all documents instantly'],  suggestions:['Documents on DigiLocker?','DigiLocker vs physical?','Share DigiLocker docs?','DigiLocker for students?'] }
+};
+
+const kb = {
+aadhaar_help:`🪪 AADHAAR CARD — Complete Guide\n\n📌 New Enrollment:\nStep 1: Book appointment → https://appointments.uidai.gov.in\nStep 2: Visit Aadhaar Enrollment Center with original documents\nStep 3: Fill enrollment form (name, DOB, address, mobile)\nStep 4: Give biometrics — fingerprint + iris scan\nStep 5: Collect EID slip → Download e-Aadhaar in 90 days\n\n📌 Update Aadhaar (Online):\nStep 1: Go to → https://myaadhaar.uidai.gov.in\nStep 2: Login with Aadhaar + OTP\nStep 3: Click Update Aadhaar → Choose field → Upload doc → Pay ₹50 ✅\n\n📌 Download e-Aadhaar:\n→ https://myaadhaar.uidai.gov.in → Download Aadhaar\n📌 PDF Password: First 4 letters of name (CAPS) + birth year\n   Example: Rahul, 1995 → RAHU1995\n\n📞 UIDAI Helpline: 1947 (Free, 24×7)`,
+pan_card_help:`💳 PAN CARD — Complete Guide\n\n📌 Instant e-PAN (FREE):\nStep 1: Visit → https://www.incometax.gov.in/iec/foportal\nStep 2: Click Instant e-PAN → Enter Aadhaar → Verify OTP\nStep 3: Download PDF e-PAN instantly! ✅\n\n📌 Physical PAN (₹107):\nStep 1: Visit → https://onlineservices.nsdl.com/paam/endUserRegisterContact.html\nStep 2: Form 49A → Fill details → Upload docs → Pay → PAN in 15–20 days ✅\n\n📌 Link PAN with Aadhaar (Mandatory):\n→ https://www.incometax.gov.in → Link Aadhaar\n\n📞 Helpline: 1800-180-1961 (Free)`,
+passport_help:`🛂 PASSPORT — Complete Guide\n\nStep 1: Register at → https://passportindia.gov.in\nStep 2: Login → Apply for Fresh Passport\nStep 3: Pay: Normal ₹1500 | Tatkal ₹3500\nStep 4: Book Passport Seva Kendra appointment\nStep 5: Visit PSK with: Aadhaar + Birth Certificate + 2 photos\nStep 6: Biometrics at PSK → Police verification at home\nStep 7: Delivery: Normal 30–45 days | Tatkal 7–10 days ✅\n\n📌 Track Status: https://passportindia.gov.in\n📞 Helpline: 1800-258-1800 (Free)`,
+ration_card_help:`🍚 RATION CARD — Complete Guide\n\nStep 1: Visit your State Food Department website\nStep 2: Or visit nearest Tehsil / Block office\nStep 3: Fill Ration Card form + submit: Aadhaar (all family) + Address proof + Income certificate + Photo\nStep 4: Field officer verifies at home\nStep 5: Ration card issued in 30–45 days ✅\n\n📌 Check Status: https://nfsa.gov.in\n📞 Food Helpline: 1800-111-001 (Free)`,
+voter_id_help:`🗳️ VOTER ID — Complete Guide\n\n📌 Register New Voter:\nStep 1: Visit → https://voters.eci.gov.in → Form 6\nStep 2: Fill details + Upload photo + Address proof\nStep 3: BLO verifies → EPIC card in 30 days ✅\n\n📌 Download e-EPIC (Instant):\n→ https://voters.eci.gov.in → e-EPIC Download → Login → Download PDF ✅\n\n📌 Check Voter List: https://electoralsearch.eci.gov.in\n📞 Election Helpline: 1950`,
+gst_help:`📊 GST REGISTRATION — Complete Guide\n\nStep 1: Visit → https://www.gst.gov.in\nStep 2: Services → Registration → New Registration\nStep 3: Fill Part A: PAN + Email + Mobile → Verify OTP → Note TRN\nStep 4: Fill Part B: Business details + Bank account + Upload docs\nStep 5: Submit → GSTIN issued in 7 working days ✅\n\n📌 File Returns: https://www.gst.gov.in → Returns Dashboard\n📞 GST Helpdesk: 1800-103-4786 (Free)`,
+driving_license_help:`🚗 DRIVING LICENSE — Complete Guide\n\n📌 Phase 1 — Learner License:\nStep 1: Visit → https://parivahan.gov.in/parivahan\nStep 2: Driving Licence Services → Apply for Learner Licence\nStep 3: Upload Aadhaar + Age proof + Photo → Pay ₹200\nStep 4: Book RTO theory test → Pass → LL issued same day! ✅\n\n📌 Phase 2 — Permanent DL (after 30 days):\nApply on parivahan.gov.in → Pay ₹300-500 → Pass driving test → DL in 7 days ✅\n\n📞 Helpline: 1800-120-1553 (Free)`,
+pm_yojana_help:`🏛️ PM SCHEMES — Complete Guide\n\n🌾 PM Kisan (₹6000/year): https://pmkisan.gov.in → New Farmer Registration\n🏥 Ayushman Bharat (Free ₹5 lakh): https://pmjay.gov.in → Check Eligibility\n🏦 Jan Dhan (Free bank account): Any bank with Aadhaar + photo\n🏠 PM Awas (Home loan subsidy): https://pmaymis.gov.in\n💡 PM Ujjwala (Free LPG): https://pmuy.gov.in\n📚 MUDRA Loan (₹10 lakh): https://www.mudra.org.in\n\n📌 All Schemes: https://www.india.gov.in\n📞 PM Helpline: 1800-11-0001 (Free)`,
+digilocker_help:`📱 DIGILOCKER — Complete Guide\n\nStep 1: Visit → https://www.digilocker.gov.in (or download app)\nStep 2: Sign Up → Mobile OTP → Set 6-digit PIN → Link Aadhaar ✅\n\n📌 Access Documents:\nLogin → Issued Documents → Search:\n• UIDAI → Aadhaar | Income Tax → PAN | Transport → DL + RC | CBSE → Marksheets\n\n📌 Share: Open doc → Share → Generate secure link ✅\n📌 Legally valid under IT Act 2000\n📞 Helpline: 1800-891-3000 (Free)`
+};
+
+const langConfig = {
+    en: { voiceLang:'en-IN', greeting:`🙏 Namaste! Welcome to Bharat Seva AI!\n\n🧠 I'm powered by RAG — I use real data from official government websites to answer accurately.\n\n👈 Click any service button on the left, or type your question!\n🎤 You can also speak using the microphone button.\n\nTry: "What is the PDF password for e-Aadhaar?" or "How to apply for tatkal passport?"` },
+    hi: { voiceLang:'hi-IN', greeting:'🙏 नमस्ते! भारत सेवा AI में आपका स्वागत है!\n\n👈 बाईं तरफ कोई भी सेवा बटन क्लिक करें या नीचे अपना प्रश्न टाइप करें!' },
+    ta: { voiceLang:'ta-IN', greeting:'🙏 வணக்கம்! பாரத் சேவா AI-க்கு வரவேற்கிறோம்!\n\n👈 எந்த சேவை பொத்தானையும் அழுத்தவும் அல்லது கேள்வி தட்டச்சு செய்யவும்!' },
+    te: { voiceLang:'te-IN', greeting:'🙏 నమస్కారం! భారత్ సేవా AI కి స్వాగతం!\n\n👈 ఏదైనా సేవా బటన్ క్లిక్ చేయండి!' },
+    bn: { voiceLang:'bn-IN', greeting:'🙏 নমস্কার! ভারত সেবা AI তে স্বাগতম!\n\n👈 যেকোনো সেবা বোতাম ক্লিক করুন!' },
+    mr: { voiceLang:'mr-IN', greeting:'🙏 नमस्कार! भारत सेवा AI मध्ये स्वागत!\n\n👈 कोणताही सेवा बटण दाबा!' },
+    gu: { voiceLang:'gu-IN', greeting:'🙏 નમસ્તે! ભારત સેવા AI માં સ્વાગત!\n\n👈 કોઈ પણ સેવા બટન દબાવો!' },
+    kn: { voiceLang:'kn-IN', greeting:'🙏 ನಮಸ್ಕಾರ! ಭಾರತ ಸೇವಾ AI ಗೆ ಸ್ವಾಗತ!\n\n👈 ಯಾವುದೇ ಸೇವಾ ಬಟನ್ ಒತ್ತಿ!' },
+    ml: { voiceLang:'ml-IN', greeting:'🙏 നമസ്കാരം! ഭാരത് സേവ AI ലേക്ക് സ്വാഗതം!\n\n👈 ഏത് സേവനം ബട്ടണും ക്ലിക്ക് ചെയ്യൂ!' }
+};
+
+// ── State ──────────────────────────────────────────────────────
+let currentLang = 'en', voiceOutputEnabled = true, isListening = false;
+let recognition = null, currentService = null, livePanelVisible = true;
+let iframeTimeout = null, ragHistory = [];
+
+// ── RAG Status ─────────────────────────────────────────────────
+async function checkRagStatus() {
+    try {
+        const res = await fetch(`${RAG_URL}/stats`, { signal: AbortSignal.timeout(3000) });
+        const data = await res.json();
+        document.getElementById('status-text').textContent = `RAG Ready · ${data.total_chunks} chunks`;
+        document.getElementById('rag-status').style.cssText = 'display:flex;align-items:center;gap:5px;background:var(--green-pale);border:1.5px solid rgba(19,136,8,0.2);border-radius:9px;padding:6px 12px;font-size:11px;font-weight:600;color:var(--green);';
+    } catch(e) {
+        document.getElementById('status-text').textContent = 'Offline (keyword mode)';
+        document.getElementById('rag-status').style.cssText = 'display:flex;align-items:center;gap:5px;background:#FFF3E8;border:1.5px solid rgba(255,102,0,0.3);border-radius:9px;padding:6px 12px;font-size:11px;font-weight:600;color:var(--saffron);';
+        document.getElementById('status-dot').style.background = 'var(--saffron)';
+    }
+}
+
+// ── Get Answer: RAG first, KB fallback ────────────────────────
+async function getAnswer(text) {
+    try {
+        const res = await fetch(`${RAG_URL}/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text, language: currentLang, conversation_history: ragHistory }),
+            signal: AbortSignal.timeout(10000)
+        });
+        if (!res.ok) throw new Error('bad');
+        const data = await res.json();
+        ragHistory.push({ role:'user', content:text }, { role:'assistant', content:data.answer });
+        if (ragHistory.length > 10) ragHistory = ragHistory.slice(-10);
+        let reply = data.answer;
+
+        return reply;
+    } catch(e) {
+        // Offline fallback
+        const intent = matchIntent(text);
+        if (intent && kb[intent]) return kb[intent];
+        return "I can help with Indian government services!\n\n👈 Click a service button on the left, or ask about:\nAadhaar, PAN Card, Passport, GST, Voter ID, Driving License, PM Yojanas, DigiLocker, Ration Card";
+    }
+}
+
+// ── Keyword Matcher ────────────────────────────────────────────
+function matchIntent(text) {
+    const m = text.toLowerCase();
+    if (m.match(/aadhaar|aadhar|uidai|आधार|ஆதார்|ఆధార్|আধার|આધાર|ಆಧಾರ್|ആധാർ/)) return 'aadhaar_help';
+    if (m.match(/\bpan\b|pan card|पैन|பான்|పాన్|প্যান|ಪ್ಯಾನ್|പാൻ/)) return 'pan_card_help';
+    if (m.match(/passport|पासपोर्ट|பாஸ்போர்ட்|పాస్‌పోర్ట్|পাসপোর্ট|ಪಾಸ್‌ಪೋರ್ಟ್|പാസ്‌പോർട്ട്/)) return 'passport_help';
+    if (m.match(/ration|राशन|ரேஷன்|రేషన్|রেশন|ರೇಷನ್|റേഷൻ/)) return 'ration_card_help';
+    if (m.match(/voter|voting|election|मतदाता|வாக்காளர்|ఓటర్|ভোটার|ಮತದಾರ|വോട്ടർ/)) return 'voter_id_help';
+    if (m.match(/\bgst\b|gstin|जीएसटी|ஜிஎஸ்டி|జిఎస్టి|জিএসটি|ಜಿಎಸ್ಟಿ|ജിഎസ്ടി/)) return 'gst_help';
+    if (m.match(/driving|licence|license|\bdl\b|ड्राइविंग|ஓட்டுநர்|డ్రైవింగ్|ড্রাইভিং|ಚಾಲನಾ|ഡ്രൈവിംഗ്/)) return 'driving_license_help';
+    if (m.match(/yojana|scheme|kisan|ayushman|mudra|ujjwala|awas|योजना|திட்டம்|యోజన|যোজনা|ಯೋಜನೆ|യോജന/)) return 'pm_yojana_help';
+    if (m.match(/digi|digilocker|डिजिलॉकर|டிஜிலாக்கர்|డిజిలాకర్|ডিজিলকার|ಡಿಜಿ|ഡിജി/)) return 'digilocker_help';
+    return null;
+}
+
+// ── Send Message ───────────────────────────────────────────────
+async function sendMessage() {
+    const input = document.getElementById('user-input');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    appendMessage(text, 'user');
+    showTyping();
+    const answer = await getAnswer(text);
+    removeTyping();
+    // Load live panel based on detected intent
+    const intent = matchIntent(text);
+    if (intent && services[intent] && livePanelVisible) loadLivePanel(intent);
+    const svc = intent ? services[intent] : null;
+    appendMessage(answer, 'bot', svc ? svc.suggestions : []);
+    speakText(answer.split('\n')[0]);
+}
+
+// ── Live Panel ─────────────────────────────────────────────────
+function selectService(intent) {
+    const svc = services[intent];
+    if (!svc) return;
+    loadLivePanel(intent);
+    appendMessage('Tell me about ' + svc.name, 'user');
+    showTyping();
+    getAnswer('Tell me about ' + svc.name).then(answer => {
+        removeTyping();
+        appendMessage(answer, 'bot', svc.suggestions);
+        speakText(answer.split('\n')[0]);
+    });
+}
+
+function loadLivePanel(intent) {
+    const svc = services[intent];
+    if (!svc) return;
+    currentService = intent;
+    document.querySelectorAll('.service-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.getElementById(svc.btnId);
+    if (btn) btn.classList.add('active');
+    document.getElementById('live-panel-title').textContent = svc.icon + ' ' + svc.name + ' — Official Site';
+    document.getElementById('live-url-display').textContent = svc.url;
+    document.getElementById('loading-url-text').textContent = svc.url;
+    document.getElementById('panel-empty').style.display = 'none';
+    document.getElementById('iframe-blocked').style.display = 'none';
+    document.getElementById('live-iframe').style.display = 'none';
+    document.getElementById('iframe-loader').style.display = 'flex';
+    clearTimeout(iframeTimeout);
+    iframeTimeout = setTimeout(() => showBlockedState(svc), 3000);
+    const iframe = document.getElementById('live-iframe');
+    iframe.onload = () => { clearTimeout(iframeTimeout); try { iframe.contentDocument; iframe.style.display='block'; document.getElementById('iframe-loader').style.display='none'; } catch(e) { showBlockedState(svc); } };
+    iframe.onerror = () => { clearTimeout(iframeTimeout); showBlockedState(svc); };
+    iframe.src = svc.url;
+}
+
+function showBlockedState(svc) {
+    var det = {aadhaar_help:{fee:'Free',time:'10-20 days',helpline:'1947',c:'#FF6600'},pan_card_help:{fee:'Free/Rs107',time:'Instant/15d',helpline:'1800-180-1961',c:'#1a6fc4'},passport_help:{fee:'Rs1500-3500',time:'30-45 days',helpline:'1800-258-1800',c:'#0a3d91'},ration_card_help:{fee:'Free',time:'30 days',helpline:'1967',c:'#138808'},voter_id_help:{fee:'Free',time:'2-4 weeks',helpline:'1950',c:'#9b1c1c'},gst_help:{fee:'Free',time:'3-7 days',helpline:'1800-103-4786',c:'#7c3aed'},driving_license_help:{fee:'Rs200-500',time:'7-10 days',helpline:'1800-120-1553',c:'#b45309'},digilocker_help:{fee:'Free',time:'Instant',helpline:'1800-111-555',c:'#0369a1'},pm_yojana_help:{fee:'Free',time:'Varies',helpline:'14555',c:'#065f46'}};
+    document.getElementById('iframe-loader').style.display = 'none';
+    document.getElementById('live-iframe').style.display = 'none';
+    var d = det[currentService] || {fee:'Free',time:'Varies',helpline:'1800',c:'#FF6600'};
+    var steps = svc.steps.map(function(s,i){ return '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6;"><span style="background:'+d.c+';color:white;border-radius:50%;min-width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">'+(i+1)+'</span><span style="font-size:12px;color:#1f2937;line-height:1.5;">'+s+'</span></div>'; }).join('');
+    document.getElementById('iframe-blocked').style.display = 'flex';
+    document.getElementById('iframe-blocked').innerHTML = '<div style="width:100%;padding:16px;display:flex;flex-direction:column;gap:12px;"><div style="background:linear-gradient(135deg,'+d.c+','+d.c+'cc);border-radius:14px;padding:18px;color:white;text-align:center;"><div style="font-size:34px;margin-bottom:6px;">'+svc.icon+'</div><h3 style="font-size:17px;font-weight:800;margin-bottom:4px;">'+svc.name+'</h3><a href="'+svc.url+'" target="_blank" style="color:rgba(255,255,255,0.85);font-size:10px;">'+svc.url+'</a></div><div style="display:flex;gap:8px;"><div style="flex:1;background:#fff8f0;border:1.5px solid #fed7aa;border-radius:10px;padding:8px;text-align:center;"><div style="font-size:11px;font-weight:700;">Fee</div><div style="font-size:10px;color:#1f2937;">'+d.fee+'</div></div><div style="flex:1;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:8px;text-align:center;"><div style="font-size:11px;font-weight:700;">Time</div><div style="font-size:10px;color:#1f2937;">'+d.time+'</div></div><div style="flex:1;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:8px;text-align:center;"><div style="font-size:11px;font-weight:700;">Help</div><div style="font-size:10px;color:#1f2937;">'+d.helpline+'</div></div></div><div style="background:white;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px;"><div style="font-size:11px;font-weight:700;margin-bottom:6px;">Quick Steps</div>'+steps+'</div><a href="'+svc.url+'" target="_blank" style="display:block;background:'+d.c+';color:white;text-align:center;padding:12px;border-radius:12px;font-size:13px;font-weight:700;text-decoration:none;">Open Official Website</a></div>';
+}
+
+function refreshIframe() { if (currentService) loadLivePanel(currentService); }
+function openInTab() { if (currentService) window.open(services[currentService].url, '_blank'); }
+function toggleLivePanel() {
+    livePanelVisible = !livePanelVisible;
+    document.getElementById('live-panel').classList.toggle('collapsed', !livePanelVisible);
+    document.getElementById('panel-toggle-btn').textContent = livePanelVisible ? '🌐 Hide Live' : '🌐 Show Live';
+}
+
+// ── UI ─────────────────────────────────────────────────────────
+function makeLinks(text) {
+    return text.replace(/(https?:\/\/[^\s<>"]+)/g, url => {
+        const c = url.replace(/[.,;:!?)]+$/, '');
+        return `<a href="${c}" target="_blank" rel="noopener noreferrer">${c}</a>`;
+    });
+}
+function getTime() { return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
+
+function appendMessage(text, sender, suggestions = []) {
+    const box = document.getElementById('messages');
+    const row = document.createElement('div');
+    row.className = `msg-row ${sender}`;
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    sender === 'bot' ? (bubble.innerHTML = makeLinks(text)) : (bubble.textContent = text);
+    const meta = document.createElement('div');
+    meta.className = 'msg-meta';
+    meta.textContent = getTime();
+    row.appendChild(bubble);
+    row.appendChild(meta);
+    if (suggestions && suggestions.length > 0) {
+        const chips = document.createElement('div');
+        chips.className = 'suggestions';
+        suggestions.forEach(c => {
+            const btn = document.createElement('button');
+            btn.type = 'button'; btn.className = 'chip'; btn.textContent = c;
+            btn.onclick = () => { document.getElementById('user-input').value = c; sendMessage(); };
+            chips.appendChild(btn);
+        });
+        var lb=document.createElement("button"); lb.type="button"; lb.className="chip"; lb.style.cssText="border-color:#138808;color:#138808;"; lb.textContent="Nearest Office"; lb.onclick=function(){ findNearestOffice(); }; chips.appendChild(lb);
+        row.appendChild(chips);
+    }
+    box.appendChild(row);
+    box.scrollTop = box.scrollHeight;
+}
+function showTyping() { showSmartTyping(); }
+function removeTyping() { removeSmartTyping(); }
+
+// ── Language ───────────────────────────────────────────────────
+function changeLanguage() {
+    currentLang = document.getElementById('lang-select').value;
+    appendMessage((langConfig[currentLang] || langConfig.en).greeting, 'bot', []);
+    applyUILanguage(currentLang);
+}
+
+// ── Voice Input ────────────────────────────────────────────────
+function toggleVoice() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        appendMessage('⚠️ Voice input requires Google Chrome!', 'bot', []); return;
+    }
+    isListening ? stopVoice() : startVoice();
+}
+function startVoice() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SR();
+    recognition.lang = (langConfig[currentLang] || langConfig.en).voiceLang;
+    recognition.interimResults = false;
+    recognition.onstart = () => { isListening = true; document.getElementById('voice-btn').classList.add('listening'); document.getElementById('voice-btn').innerHTML = '⏹️'; document.getElementById('voice-status').classList.add('show'); };
+    recognition.onresult = e => { document.getElementById('user-input').value = e.results[0][0].transcript; stopVoice(); setTimeout(() => sendMessage(), 300); };
+    recognition.onerror = e => { stopVoice(); if (e.error === 'not-allowed') appendMessage('⚠️ Microphone blocked! Allow mic in browser settings.', 'bot', []); };
+    recognition.onend = () => stopVoice();
+    recognition.start();
+}
+function stopVoice() {
+    isListening = false;
+    if (recognition) try { recognition.stop(); } catch(e) {}
+    document.getElementById('voice-btn').classList.remove('listening');
+    document.getElementById('voice-btn').innerHTML = '🎤';
+    document.getElementById('voice-status').classList.remove('show');
+}
+
+// ── Voice Output ───────────────────────────────────────────────
+function toggleVoiceOutput() {
+    voiceOutputEnabled = !voiceOutputEnabled;
+    document.getElementById('speaker-btn').innerHTML = voiceOutputEnabled ? '🔊' : '🔇';
+    if (!voiceOutputEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
+}
+function speakText(text) {
+    if (!voiceOutputEnabled || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const clean = text.replace(/https?:\/\/[^\s]+/g, '').replace(/[🪪💳🛂🍚🗳️📊🚗🏛️📱🙏✅📞📌⚠️]/g, '').slice(0, 300);
+    if (!clean.trim()) return;
+    const u = new SpeechSynthesisUtterance(clean);
+    const map = {hi:'hi-IN',ta:'ta-IN',te:'te-IN',bn:'bn-IN',mr:'mr-IN',gu:'gu-IN',kn:'kn-IN',ml:'ml-IN',en:'en-IN'};
+    u.lang = map[currentLang] || 'en-IN'; u.rate = 0.88; u.pitch = 1.05;
+    window.speechSynthesis.speak(u);
+}
+function clearChat() {
+    document.getElementById('messages').innerHTML = '';
+    ragHistory = [];
+    appendMessage((langConfig[currentLang] || langConfig.en).greeting, 'bot', []);
+}
+
+// ── Init ───────────────────────────────────────────────────────
+
+// ═══════════════════════════════════════════════════════════════
+// FULL UI TRANSLATION SYSTEM
+// ═══════════════════════════════════════════════════════════════
+var uiStrings = {
+    en: {
+        tagline:       'AI GOVERNMENT ASSISTANT · BHARAT SEVA',
+        chatSubtitle:  'RAG-Powered · Live Web · Voice · 9 Languages',
+        quickServices: 'Quick Services',
+        emergencyHelp: '🆘 Emergency Helplines',
+        smartTools:    '🚀 Smart Tools',
+        aiFeatures:    '✨ AI Features',
+        placeholder:   'Ask anything about Indian government services...',
+        footerHint:    '💡 Click a service button · 🎤 Voice input · 9 languages · 🧠 RAG AI',
+        docChecklist:  '✅ Document Checklist',
+        trackApp:      '🔍 Track Application',
+        eligibility:   '🎯 Eligibility Checker',
+        recommender:   '🏛️ Scheme Recommender',
+        qrCode:        '🔲 QR Code Generator',
+        services: { aadhaar:'Aadhaar', pan:'PAN Card', passport:'Passport', ration:'Ration Card', voter:'Voter ID', gst:'GST', dl:'Driving DL', yojana:'PM Yojanas', digi:'DigiLocker' }
+    },
+    hi: {
+        tagline:       'AI सरकारी सहायक · भारत सेवा',
+        chatSubtitle:  'RAG संचालित · लाइव वेब · आवाज़ · 9 भाषाएं',
+        quickServices: 'त्वरित सेवाएं',
+        emergencyHelp: '🆘 आपातकालीन हेल्पलाइन',
+        smartTools:    '🚀 स्मार्ट टूल्स',
+        aiFeatures:    '✨ AI सुविधाएं',
+        placeholder:   'भारतीय सरकारी सेवाओं के बारे में पूछें...',
+        footerHint:    '💡 सेवा बटन दबाएं · 🎤 आवाज़ इनपुट · 9 भाषाएं · 🧠 RAG AI',
+        docChecklist:  '✅ दस्तावेज़ चेकलिस्ट',
+        trackApp:      '🔍 आवेदन ट्रैक करें',
+        eligibility:   '🎯 पात्रता जांचें',
+        recommender:   '🏛️ योजना सिफारिश',
+        qrCode:        '🔲 QR कोड जनरेटर',
+        services: { aadhaar:'आधार', pan:'पैन कार्ड', passport:'पासपोर्ट', ration:'राशन कार्ड', voter:'वोटर ID', gst:'GST', dl:'ड्राइविंग लाइसेंस', yojana:'PM योजनाएं', digi:'डिजिलॉकर' }
+    },
+    ta: {
+        tagline:       'AI அரசு உதவியாளர் · பாரத் சேவா',
+        chatSubtitle:  'RAG இயக்கம் · நேரடி இணையம் · குரல் · 9 மொழிகள்',
+        quickServices: 'விரைவு சேவைகள்',
+        emergencyHelp: '🆘 அவசர உதவி எண்கள்',
+        smartTools:    '🚀 ஸ்மார்ட் கருவிகள்',
+        aiFeatures:    '✨ AI அம்சங்கள்',
+        placeholder:   'இந்திய அரசு சேவைகளைப் பற்றி கேளுங்கள்...',
+        footerHint:    '💡 சேவை பொத்தானை அழுத்தவும் · 🎤 குரல் உள்ளீடு · 9 மொழிகள் · 🧠 RAG AI',
+        docChecklist:  '✅ ஆவண சரிபார்ப்பு பட்டியல்',
+        trackApp:      '🔍 விண்ணப்பம் கண்காணிக்க',
+        eligibility:   '🎯 தகுதி சரிபார்க்க',
+        recommender:   '🏛️ திட்ட பரிந்துரை',
+        qrCode:        '🔲 QR குறியீடு உருவாக்கி',
+        services: { aadhaar:'ஆதார்', pan:'பான் கார்டு', passport:'பாஸ்போர்ட்', ration:'ரேஷன் கார்டு', voter:'வாக்காளர் அட்டை', gst:'GST', dl:'ஓட்டுநர் உரிமம்', yojana:'PM திட்டங்கள்', digi:'டிஜிலாக்கர்' }
+    },
+    te: {
+        tagline:       'AI ప్రభుత్వ సహాయకుడు · భారత్ సేవా',
+        chatSubtitle:  'RAG ఆధారిత · లైవ్ వెబ్ · వాయిస్ · 9 భాషలు',
+        quickServices: 'త్వరిత సేవలు',
+        emergencyHelp: '🆘 అత్యవసర హెల్ప్‌లైన్లు',
+        smartTools:    '🚀 స్మార్ట్ టూల్స్',
+        aiFeatures:    '✨ AI లక్షణాలు',
+        placeholder:   'భారత ప్రభుత్వ సేవల గురించి అడగండి...',
+        footerHint:    '💡 సేవా బటన్ నొక్కండి · 🎤 వాయిస్ ఇన్‌పుట్ · 9 భాషలు · 🧠 RAG AI',
+        docChecklist:  '✅ పత్రాల చెక్‌లిస్ట్',
+        trackApp:      '🔍 దరఖాస్తు ట్రాక్ చేయండి',
+        eligibility:   '🎯 అర్హత తనిఖీ',
+        recommender:   '🏛️ పథకం సిఫారసు',
+        qrCode:        '🔲 QR కోడ్ జనరేటర్',
+        services: { aadhaar:'ఆధార్', pan:'పాన్ కార్డ్', passport:'పాస్‌పోర్ట్', ration:'రేషన్ కార్డ్', voter:'ఓటరు ID', gst:'GST', dl:'డ్రైవింగ్ లైసెన్స్', yojana:'PM పథకాలు', digi:'డిజిలాకర్' }
+    },
+    bn: {
+        tagline:       'AI সরকারি সহায়তা · ভারত সেবা',
+        chatSubtitle:  'RAG চালিত · লাইভ ওয়েব · ভয়েস · ৯ ভাষা',
+        quickServices: 'দ্রুত সেবা',
+        emergencyHelp: '🆘 জরুরি হেল্পলাইন',
+        smartTools:    '🚀 স্মার্ট টুলস',
+        aiFeatures:    '✨ AI বৈশিষ্ট্য',
+        placeholder:   'ভারতীয় সরকারি সেবা সম্পর্কে জিজ্ঞেস করুন...',
+        footerHint:    '💡 সেবা বোতাম চাপুন · 🎤 ভয়েস ইনপুট · ৯ ভাষা · 🧠 RAG AI',
+        docChecklist:  '✅ নথির চেকলিস্ট',
+        trackApp:      '🔍 আবেদন ট্র্যাক করুন',
+        eligibility:   '🎯 যোগ্যতা যাচাই',
+        recommender:   '🏛️ প্রকল্প সুপারিশ',
+        qrCode:        '🔲 QR কোড জেনারেটর',
+        services: { aadhaar:'আধার', pan:'প্যান কার্ড', passport:'পাসপোর্ট', ration:'রেশন কার্ড', voter:'ভোটার ID', gst:'GST', dl:'ড্রাইভিং লাইসেন্স', yojana:'PM প্রকল্প', digi:'ডিজিলকার' }
+    },
+    mr: {
+        tagline:       'AI सरकारी सहाय्यक · भारत सेवा',
+        chatSubtitle:  'RAG चालित · थेट वेब · आवाज · ९ भाषा',
+        quickServices: 'त्वरित सेवा',
+        emergencyHelp: '🆘 आपत्कालीन हेल्पलाइन',
+        smartTools:    '🚀 स्मार्ट साधने',
+        aiFeatures:    '✨ AI वैशिष्ट्ये',
+        placeholder:   'भारतीय सरकारी सेवांबद्दल विचारा...',
+        footerHint:    '💡 सेवा बटण दाबा · 🎤 आवाज इनपुट · ९ भाषा · 🧠 RAG AI',
+        docChecklist:  '✅ कागदपत्र यादी',
+        trackApp:      '🔍 अर्ज ट्रॅक करा',
+        eligibility:   '🎯 पात्रता तपासा',
+        recommender:   '🏛️ योजना शिफारस',
+        qrCode:        '🔲 QR कोड जनरेटर',
+        services: { aadhaar:'आधार', pan:'पॅन कार्ड', passport:'पासपोर्ट', ration:'रेशन कार्ड', voter:'मतदार ID', gst:'GST', dl:'वाहन परवाना', yojana:'PM योजना', digi:'डिजिलॉकर' }
+    },
+    gu: {
+        tagline:       'AI સરકારી સહાયક · ભારત સેવા',
+        chatSubtitle:  'RAG સંચાલિત · લાઇવ વેબ · અવાજ · ૯ ભાષા',
+        quickServices: 'ઝડપી સેવાઓ',
+        emergencyHelp: '🆘 કટોકટી હેલ્પલાઈન',
+        smartTools:    '🚀 સ્માર્ટ ટૂલ્સ',
+        aiFeatures:    '✨ AI સુવિધાઓ',
+        placeholder:   'ભારતીય સરકારી સેવાઓ વિશે પૂછો...',
+        footerHint:    '💡 સેવા બટન દબાવો · 🎤 અવાજ ઇનપુટ · ૯ ભાષા · 🧠 RAG AI',
+        docChecklist:  '✅ દસ્તાવેજ ચેકલિસ્ટ',
+        trackApp:      '🔍 અરજી ટ્રૅક કરો',
+        eligibility:   '🎯 પાત્રતા તપાસો',
+        recommender:   '🏛️ યોજના ભલામણ',
+        qrCode:        '🔲 QR કોડ જનરેટર',
+        services: { aadhaar:'આધાર', pan:'પૅન કાર્ડ', passport:'પાસપોર્ટ', ration:'રેશન કાર્ડ', voter:'મતદાર ID', gst:'GST', dl:'ડ્રાઇવિંગ લાઇસન્સ', yojana:'PM યોજનાઓ', digi:'ડિજિલૉકર' }
+    },
+    kn: {
+        tagline:       'AI ಸರ್ಕಾರಿ ಸಹಾಯಕ · ಭಾರತ ಸೇವಾ',
+        chatSubtitle:  'RAG ಚಾಲಿತ · ನೇರ ವೆಬ್ · ಧ್ವನಿ · 9 ಭಾಷೆಗಳು',
+        quickServices: 'ತ್ವರಿತ ಸೇವೆಗಳು',
+        emergencyHelp: '🆘 ತುರ್ತು ಸಹಾಯ',
+        smartTools:    '🚀 ಸ್ಮಾರ್ಟ್ ಟೂಲ್ಸ್',
+        aiFeatures:    '✨ AI ವೈಶಿಷ್ಟ್ಯಗಳು',
+        placeholder:   'ಭಾರತೀಯ ಸರ್ಕಾರಿ ಸೇವೆಗಳ ಬಗ್ಗೆ ಕೇಳಿ...',
+        footerHint:    '💡 ಸೇವಾ ಬಟನ್ ಒತ್ತಿ · 🎤 ಧ್ವನಿ ಇನ್‌ಪುಟ್ · 9 ಭಾಷೆಗಳು · 🧠 RAG AI',
+        docChecklist:  '✅ ದಾಖಲೆ ಪರಿಶೀಲನಾ ಪಟ್ಟಿ',
+        trackApp:      '🔍 ಅರ್ಜಿ ಟ್ರ್ಯಾಕ್ ಮಾಡಿ',
+        eligibility:   '🎯 ಅರ್ಹತೆ ಪರಿಶೀಲಿಸಿ',
+        recommender:   '🏛️ ಯೋಜನೆ ಶಿಫಾರಸು',
+        qrCode:        '🔲 QR ಕೋಡ್ ಜನರೇಟರ್',
+        services: { aadhaar:'ಆಧಾರ್', pan:'ಪ್ಯಾನ್ ಕಾರ್ಡ್', passport:'ಪಾಸ್‌ಪೋರ್ಟ್', ration:'ರೇಷನ್ ಕಾರ್ಡ್', voter:'ಮತದಾರ ID', gst:'GST', dl:'ಚಾಲನಾ ಪರವಾನಗಿ', yojana:'PM ಯೋಜನೆಗಳು', digi:'ಡಿಜಿಲಾಕರ್' }
+    },
+    ml: {
+        tagline:       'AI സർക്കാർ സഹായി · ഭാരത് സേവ',
+        chatSubtitle:  'RAG ശക്തി · തത്സമയ വെബ് · ശബ്ദം · 9 ഭാഷകൾ',
+        quickServices: 'ദ്രുത സേവനങ്ങൾ',
+        emergencyHelp: '🆘 അടിയന്തര ഹെൽപ്‌ലൈൻ',
+        smartTools:    '🚀 സ്മാർട്ട് ടൂൾസ്',
+        aiFeatures:    '✨ AI സവിശേഷതകൾ',
+        placeholder:   'ഇന്ത്യൻ സർക്കാർ സേവനങ്ങളെ കുറിച്ച് ചോദിക്കൂ...',
+        footerHint:    '💡 സേവന ബട്ടൺ അമർത്തുക · 🎤 ശബ്ദ ഇൻപുട്ട് · 9 ഭാഷകൾ · 🧠 RAG AI',
+        docChecklist:  '✅ രേഖകളുടെ ചെക്ക്‌ലിസ്റ്റ്',
+        trackApp:      '🔍 അപേക്ഷ ട്രാക്ക് ചെയ്യൂ',
+        eligibility:   '🎯 യോഗ്യത പരിശോധിക്കൂ',
+        recommender:   '🏛️ പദ്ധതി ശുപാർശ',
+        qrCode:        '🔲 QR കോഡ് ജനറേറ്റർ',
+        services: { aadhaar:'ആധാർ', pan:'പാൻ കാർഡ്', passport:'പാസ്‌പോർട്ട്', ration:'റേഷൻ കാർഡ്', voter:'വോട്ടർ ID', gst:'GST', dl:'ഡ്രൈവിങ് ലൈസൻസ്', yojana:'PM പദ്ധതികൾ', digi:'ഡിജിലോക്കർ' }
+    }
+};
+
+function applyUILanguage(lang) {
+    var s = uiStrings[lang] || uiStrings.en;
+
+    // Brand tagline
+    var tagEl = document.querySelector('.brand-text p');
+    if (tagEl) tagEl.textContent = s.tagline;
+
+    // Chat header subtitle
+    var subEl = document.querySelector('.chat-header p');
+    if (subEl) subEl.textContent = s.chatSubtitle;
+
+    // Input placeholder
+    var inp = document.getElementById('user-input');
+    if (inp) inp.placeholder = s.placeholder;
+
+    // Footer hint
+    var hint = document.querySelector('.chat-hint');
+    if (hint) hint.textContent = s.footerHint;
+
+    // Sidebar: Quick Services title
+    document.querySelectorAll('.sidebar-title').forEach(function(el) {
+        var t = el.textContent.trim();
+        if (t.replace(/[^a-zA-Z\u0900-\u097F\u0B80-\u0BFF]/g,'').length > 0) {
+            if (el.closest('.sidebar-section') && el.closest('.sidebar-section').querySelector('.service-grid')) {
+                el.textContent = s.quickServices;
+            }
+            if (t.indexOf('Helpline') >= 0 || t.indexOf('हेल्पलाइन') >= 0 || t.indexOf('உதவி') >= 0 || el.textContent.indexOf('🆘') >= 0) {
+                el.textContent = s.emergencyHelp;
+            }
+        }
+    });
+
+    // Smart Tools buttons
+    var toolBtns = document.querySelectorAll('.sidebar-section button[onclick]');
+    toolBtns.forEach(function(btn) {
+        var oc = btn.getAttribute('onclick') || '';
+        if (oc.indexOf("'checklist'") >= 0)   btn.textContent = s.docChecklist;
+        if (oc.indexOf("'status'") >= 0)       btn.textContent = s.trackApp;
+        if (oc.indexOf("'eligibility'") >= 0)  btn.textContent = s.eligibility;
+        if (oc.indexOf("'recommender'") >= 0)  btn.textContent = s.recommender;
+        if (oc.indexOf('openQRTool') >= 0)     btn.textContent = s.qrCode;
+    });
+
+    // Service button labels
+    var svcMap = {
+        'btn-aadhaar': s.services.aadhaar,
+        'btn-pan':     s.services.pan,
+        'btn-passport':s.services.passport,
+        'btn-ration':  s.services.ration,
+        'btn-voter':   s.services.voter,
+        'btn-gst':     s.services.gst,
+        'btn-dl':      s.services.dl,
+        'btn-yojana':  s.services.yojana,
+        'btn-digi':    s.services.digi
+    };
+    Object.keys(svcMap).forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) {
+            var lbl = el.querySelector('.label');
+            if (lbl) lbl.textContent = svcMap[id];
+        }
+    });
+}
+
+
+// ═══════════════════════════════════════════════════════
+// FEATURE 1: DARK MODE
+// ═══════════════════════════════════════════════════════
+var darkMode = false;
+function toggleDarkMode() {
+    darkMode = !darkMode;
+    var btn = document.getElementById('dark-btn');
+    if (darkMode) {
+        document.documentElement.style.setProperty('--cream',   '#0f172a');
+        document.documentElement.style.setProperty('--white',   '#1e293b');
+        document.documentElement.style.setProperty('--navy',    '#f1f5f9');
+        document.documentElement.style.setProperty('--gray',    '#94a3b8');
+        document.documentElement.style.setProperty('--border',  '#334155');
+        document.documentElement.style.setProperty('--green-pale', '#0f2318');
+        document.documentElement.style.setProperty('--saffron-pale','#2d1a0a');
+        document.body.style.background = '#0f172a';
+        btn.textContent = '☀️';
+        btn.title = 'Light Mode';
+    } else {
+        document.documentElement.style.setProperty('--cream',   '#FFFDF9');
+        document.documentElement.style.setProperty('--white',   '#FFFFFF');
+        document.documentElement.style.setProperty('--navy',    '#0A1628');
+        document.documentElement.style.setProperty('--gray',    '#6B7280');
+        document.documentElement.style.setProperty('--border',  '#E5E7EB');
+        document.documentElement.style.setProperty('--green-pale','#F0FAF0');
+        document.documentElement.style.setProperty('--saffron-pale','#FFF3E8');
+        document.body.style.background = '#FFFDF9';
+        btn.textContent = '🌙';
+        btn.title = 'Dark Mode';
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// FEATURE 2: SMART TYPING ANIMATION (enhanced)
+// ═══════════════════════════════════════════════════════
+var typingMessages = [
+    'Searching government records...',
+    'Checking official data...',
+    'Finding best answer...',
+    'Loading RAG knowledge base...',
+    'Verifying with official sources...'
+];
+var typingInterval = null;
+
+function showSmartTyping() {
+    var box = document.getElementById('messages');
+    var existing = document.getElementById('typing-row');
+    if (existing) existing.remove();
+    var row = document.createElement('div');
+    row.className = 'msg-row bot';
+    row.id = 'typing-row';
+    var b = document.createElement('div');
+    b.className = 'typing-bubble';
+    b.style.cssText = 'display:flex;flex-direction:column;gap:8px;min-width:200px;';
+    b.innerHTML = '<div style="display:flex;gap:5px;align-items:center;">'
+        + '<div class="tdot"></div><div class="tdot"></div><div class="tdot"></div>'
+        + '</div>'
+        + '<div id="typing-msg" style="font-size:10px;color:var(--gray);font-style:italic;">'
+        + typingMessages[0] + '</div>';
+    row.appendChild(b);
+    box.appendChild(row);
+    box.scrollTop = box.scrollHeight;
+    var i = 0;
+    typingInterval = setInterval(function() {
+        i = (i + 1) % typingMessages.length;
+        var el = document.getElementById('typing-msg');
+        if (el) el.textContent = typingMessages[i];
+    }, 1200);
+}
+
+function removeSmartTyping() {
+    if (typingInterval) { clearInterval(typingInterval); typingInterval = null; }
+    var el = document.getElementById('typing-row');
+    if (el) el.remove();
+}
+
+// ═══════════════════════════════════════════════════════
+// FEATURE 3: QR CODE GENERATOR
+// ═══════════════════════════════════════════════════════
+function openQRTool() {
+    document.getElementById('smart-modal').style.display = 'flex';
+    renderQRTool();
+}
+
+function renderQRTool() {
+    document.getElementById('modal-content').innerHTML =
+        '<div style="padding:20px;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">'
+      + '<h2 style="font-size:16px;font-weight:800;color:var(--navy);">QR Code Generator</h2>'
+      + '<button onclick="closeModal()" style="background:#f3f4f6;border:none;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:18px;">x</button></div>'
+      + '<p style="font-size:12px;color:var(--gray);margin-bottom:14px;">Generate a QR code for your application number to show at government offices.</p>'
+      + '<div style="display:flex;flex-direction:column;gap:10px;">'
+      + '<div><label style="font-size:11px;font-weight:700;color:#374151;">Service Type</label>'
+      + '<select id="qr-service" style="width:100%;padding:9px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:12px;margin-top:4px;box-sizing:border-box;font-family:inherit;">'
+      + '<option value="Aadhaar EID">Aadhaar — Enrollment ID (EID)</option>'
+      + '<option value="PAN Acknowledgement">PAN Card — Acknowledgement Number</option>'
+      + '<option value="Passport File Number">Passport — File Number</option>'
+      + '<option value="Voter ID Reference">Voter ID — Reference Number</option>'
+      + '<option value="GST ARN">GST — ARN / TRN Number</option>'
+      + '<option value="Driving License">Driving License — Application Number</option>'
+      + '<option value="Ration Card">Ration Card — Application Number</option>'
+      + '</select></div>'
+      + '<div><label style="font-size:11px;font-weight:700;color:#374151;">Application Number</label>'
+      + '<input id="qr-number" type="text" placeholder="Enter your application / reference number" style="width:100%;padding:9px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:12px;margin-top:4px;box-sizing:border-box;">'
+      + '</div>'
+      + '<div><label style="font-size:11px;font-weight:700;color:#374151;">Your Name (optional)</label>'
+      + '<input id="qr-name" type="text" placeholder="Your full name" style="width:100%;padding:9px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:12px;margin-top:4px;box-sizing:border-box;">'
+      + '</div>'
+      + '<button onclick="generateQR()" style="background:linear-gradient(135deg,#FF6600,#FF8C00);color:white;border:none;border-radius:12px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;">Generate QR Code</button>'
+      + '</div>'
+      + '<div id="qr-result" style="margin-top:16px;"></div>'
+      + '</div>';
+}
+
+function generateQR() {
+    var service = document.getElementById('qr-service').value;
+    var number  = document.getElementById('qr-number').value.trim();
+    var name    = document.getElementById('qr-name').value.trim();
+    if (!number) {
+        document.getElementById('qr-result').innerHTML =
+            '<p style="color:#dc2626;font-size:12px;text-align:center;">Please enter your application number.</p>';
+        return;
+    }
+    var text = service + ': ' + number + (name ? ' | Name: ' + name : '') + ' | Generated by Bharat Seva AI';
+    var encoded = encodeURIComponent(text);
+    var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encoded;
+    var statusUrls = {
+        'Aadhaar EID':           'https://myaadhaar.uidai.gov.in/CheckAadhaarStatus',
+        'PAN Acknowledgement':   'https://tin.tin.nsdl.com/pantan/StatusTrack.html',
+        'Passport File Number':  'https://passportindia.gov.in/AppOnlineProject/statusTracker/trackStatusInpNew',
+        'Voter ID Reference':    'https://voters.eci.gov.in/',
+        'GST ARN':               'https://www.gst.gov.in/',
+        'Driving License':       'https://parivahan.gov.in/',
+        'Ration Card':           'https://nfsa.gov.in/'
+    };
+    var statusUrl = statusUrls[service] || '#';
+    document.getElementById('qr-result').innerHTML =
+        '<div style="text-align:center;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:16px;padding:20px;">'
+      + '<div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:4px;">' + service + '</div>'
+      + '<div style="font-size:11px;color:var(--gray);margin-bottom:12px;font-family:monospace;">' + number + '</div>'
+      + '<img src="' + qrUrl + '" alt="QR Code" style="width:180px;height:180px;border-radius:12px;border:4px solid white;box-shadow:0 4px 16px rgba(0,0,0,0.12);" '
+      + 'onerror="this.parentElement.innerHTML=\'<p style=color:#dc2626;font-size:12px>QR service unavailable. Check internet connection.</p>\'">'
+      + '<div style="margin-top:12px;font-size:10px;color:var(--gray);">Show this QR at the government office</div>'
+      + (name ? '<div style="margin-top:4px;font-size:11px;font-weight:600;color:var(--navy);">' + name + '</div>' : '')
+      + '<a href="' + statusUrl + '" target="_blank" style="display:block;margin-top:12px;background:linear-gradient(135deg,#138808,#166534);color:white;padding:9px;border-radius:9px;font-size:11px;font-weight:700;text-decoration:none;">Check Application Status Online</a>'
+      + '</div>';
+}
+
+
+
+var serviceVideos = {
+    aadhaar_help:        'https://www.youtube.com/results?search_query=aadhaar+card+tutorial+hindi',
+    pan_card_help:       'https://www.youtube.com/results?search_query=epan+card+apply+free+tutorial',
+    passport_help:       'https://www.youtube.com/results?search_query=passport+apply+online+india+tutorial',
+    ration_card_help:    'https://www.youtube.com/results?search_query=ration+card+apply+tutorial',
+    voter_id_help:       'https://www.youtube.com/results?search_query=voter+id+epic+download+tutorial',
+    gst_help:            'https://www.youtube.com/results?search_query=gst+registration+tutorial',
+    driving_license_help:'https://www.youtube.com/results?search_query=driving+license+parivahan+tutorial',
+    digilocker_help:     'https://www.youtube.com/results?search_query=digilocker+app+tutorial',
+    pm_yojana_help:      'https://www.youtube.com/results?search_query=pm+kisan+ayushman+mudra+tutorial'
+};
+
+var coimbatoreOffices = {
+    aadhaar_help:        {name:'UIDAI Aadhaar Center Coimbatore',     query:'Aadhaar enrollment center Coimbatore'},
+    pan_card_help:       {name:'NSDL PAN Office Coimbatore',           query:'NSDL PAN card office Coimbatore'},
+    passport_help:       {name:'Passport Seva Kendra Coimbatore',      query:'Passport Seva Kendra Coimbatore'},
+    ration_card_help:    {name:'Tahsildar Office Coimbatore',          query:'Tahsildar office Coimbatore'},
+    voter_id_help:       {name:'District Election Office Coimbatore',  query:'District Election Office Coimbatore'},
+    gst_help:            {name:'GST Seva Kendra Coimbatore',           query:'GST Seva Kendra Coimbatore'},
+    driving_license_help:{name:'RTO Coimbatore',                       query:'RTO Regional Transport Office Coimbatore'},
+    digilocker_help:     {name:'CSC Common Service Centre Coimbatore', query:'CSC Common Service Centre Coimbatore'},
+    pm_yojana_help:      {name:'Jan Seva Kendra Coimbatore',           query:'Jan Seva Kendra Coimbatore'}
+};
+
+var docChecklists = {
+    aadhaar_help:{name:'Aadhaar Card',icon:'ID',docs:[
+        {id:'a1',label:'Identity Proof (PAN / Passport / Voter ID / Driving License)'},
+        {id:'a2',label:'Address Proof (Electricity Bill / Bank Passbook / Ration Card)'},
+        {id:'a3',label:'Date of Birth Proof (Birth Certificate / 10th Marksheet)'},
+        {id:'a4',label:'Mobile number (to receive OTP)'}
+    ]},
+    pan_card_help:{name:'PAN Card',icon:'PAN',docs:[
+        {id:'p1',label:'Aadhaar Card (for Instant e-PAN)'},
+        {id:'p2',label:'Aadhaar-linked mobile number (for OTP)'},
+        {id:'p3',label:'Passport size photo (for physical PAN)'},
+        {id:'p4',label:'Signature on white paper (for physical PAN)'}
+    ]},
+    passport_help:{name:'Passport',icon:'PP',docs:[
+        {id:'ps1',label:'Aadhaar Card'},
+        {id:'ps2',label:'PAN Card or Voter ID'},
+        {id:'ps3',label:'Date of Birth proof (Birth Certificate / 10th certificate)'},
+        {id:'ps4',label:'Address proof (Electricity bill / Bank passbook)'},
+        {id:'ps5',label:'Passport size photos (white background)'},
+        {id:'ps6',label:'Online application at passportindia.gov.in'}
+    ]},
+    ration_card_help:{name:'Ration Card',icon:'RC',docs:[
+        {id:'r1',label:'Aadhaar card of all family members'},
+        {id:'r2',label:'Address proof (Electricity bill / Rent agreement)'},
+        {id:'r3',label:'Passport size photos of family members'},
+        {id:'r4',label:'Mobile number'},
+        {id:'r5',label:'Income certificate (for BPL/AAY cards)'}
+    ]},
+    voter_id_help:{name:'Voter ID',icon:'VI',docs:[
+        {id:'v1',label:'Age Proof (Birth certificate / 10th Marksheet / Passport)'},
+        {id:'v2',label:'Address Proof (Aadhaar / Electricity bill / Rent agreement)'},
+        {id:'v3',label:'Passport size photo'},
+        {id:'v4',label:'You must be 18+ years old'}
+    ]},
+    gst_help:{name:'GST Registration',icon:'GST',docs:[
+        {id:'g1',label:'PAN Card'},
+        {id:'g2',label:'Aadhaar Card'},
+        {id:'g3',label:'Business address proof (Electricity bill / Rent agreement)'},
+        {id:'g4',label:'Bank account details (cancelled cheque or passbook)'},
+        {id:'g5',label:'Business registration proof (Shop license / Partnership deed)'},
+        {id:'g6',label:'Photograph of proprietor'}
+    ]},
+    driving_license_help:{name:'Driving License',icon:'DL',docs:[
+        {id:'d1',label:'Age Proof (Birth certificate / 10th marksheet)'},
+        {id:'d2',label:'Address Proof (Aadhaar / Passport / Electricity bill)'},
+        {id:'d3',label:'Passport size photo'},
+        {id:'d4',label:'Learner License (for permanent DL only)'}
+    ]},
+    digilocker_help:{name:'DigiLocker',icon:'DG',docs:[
+        {id:'dl1',label:'Aadhaar Card'},
+        {id:'dl2',label:'Mobile number linked with Aadhaar'}
+    ]},
+    pm_yojana_help:{name:'PM Yojana',icon:'PM',docs:[
+        {id:'y1',label:'Aadhaar Card'},
+        {id:'y2',label:'Bank account linked with Aadhaar'},
+        {id:'y3',label:'Income Certificate (for housing/health schemes)'},
+        {id:'y4',label:'Land records (for PM Kisan)'},
+        {id:'y5',label:'Ration Card / BPL certificate (for Ujjwala / Ayushman)'}
+    ]}
+};
+
+function closeModal() {
+    document.getElementById('smart-modal').style.display = 'none';
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+
+function openTool(tool) {
+    document.getElementById('smart-modal').style.display = 'flex';
+    if (tool === 'checklist')   renderChecklist();
+    if (tool === 'status')      renderStatusTracker();
+    if (tool === 'eligibility') renderEligibility(0);
+    if (tool === 'recommender') renderRecommender();
+}
+
+function renderChecklist(serviceKey) {
+    var key = serviceKey || currentService || 'aadhaar_help';
+    if (!docChecklists[key]) key = 'aadhaar_help';
+    var data = docChecklists[key];
+    var opts = Object.keys(docChecklists).map(function(k) {
+        return '<option value="' + k + '"' + (k === key ? ' selected' : '') + '>' + docChecklists[k].name + '</option>';
+    }).join('');
+    var items = data.docs.map(function(doc) {
+        return '<label style="display:flex;align-items:flex-start;gap:10px;padding:10px;background:#f9fafb;border-radius:10px;cursor:pointer;border:1.5px solid #e5e7eb;margin-bottom:6px;">'
+             + '<input type="checkbox" id="chk_' + doc.id + '" style="margin-top:2px;width:16px;height:16px;accent-color:#138808;flex-shrink:0;" onchange="updateChecklist()">'
+             + '<span style="font-size:12px;color:#1f2937;line-height:1.5;">' + doc.label + '</span></label>';
+    }).join('');
+    document.getElementById('modal-content').innerHTML =
+        '<div style="padding:20px;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">'
+      + '<h2 style="font-size:16px;font-weight:800;color:#1f2937;">Document Checklist</h2>'
+      + '<button onclick="closeModal()" style="background:#f3f4f6;border:none;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:18px;line-height:1;">x</button></div>'
+      + '<select onchange="renderChecklist(this.value)" style="width:100%;padding:10px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;margin-bottom:14px;font-family:inherit;">' + opts + '</select>'
+      + '<div id="checklist-items">' + items + '</div>'
+      + '<div id="checklist-result" style="margin-top:14px;padding:12px;border-radius:10px;font-size:12px;font-weight:600;text-align:center;background:#f3f4f6;color:#6b7280;">Check off documents you have</div>'
+      + '</div>';
+}
+
+function updateChecklist() {
+    var checks = document.querySelectorAll('#checklist-items input[type=checkbox]');
+    var total = checks.length, checked = 0;
+    checks.forEach(function(c) { if (c.checked) checked++; });
+    var res = document.getElementById('checklist-result');
+    if (checked === total) {
+        res.style.background = '#dcfce7'; res.style.color = '#166534';
+        res.textContent = 'All documents ready! You can apply now.';
+    } else {
+        res.style.background = '#fff7ed'; res.style.color = '#92400e';
+        res.textContent = (total - checked) + ' document(s) still needed.';
+    }
+}
+
+function renderStatusTracker() {
+    function card(name, hint, url, site) {
+        return '<div style="background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px;margin-bottom:8px;">'
+             + '<div style="font-size:13px;font-weight:700;color:#1f2937;margin-bottom:4px;">' + name + '</div>'
+             + '<div style="font-size:10px;color:#6b7280;margin-bottom:8px;">' + hint + '</div>'
+             + '<a href="' + url + '" target="_blank" style="display:block;background:#1e40af;color:white;text-align:center;padding:8px;border-radius:8px;font-size:11px;font-weight:700;text-decoration:none;">Check on ' + site + '</a>'
+             + '</div>';
+    }
+    document.getElementById('modal-content').innerHTML =
+        '<div style="padding:20px;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">'
+      + '<h2 style="font-size:16px;font-weight:800;color:#1f2937;">Track Application</h2>'
+      + '<button onclick="closeModal()" style="background:#f3f4f6;border:none;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:18px;">x</button></div>'
+      + card('Passport Status', 'Enter your File Number from appointment receipt', 'https://passportindia.gov.in/AppOnlineProject/statusTracker/trackStatusInpNew', 'passportindia.gov.in')
+      + card('PAN Card Status', 'Enter 15-digit Acknowledgement Number', 'https://tin.tin.nsdl.com/pantan/StatusTrack.html', 'tin.tin.nsdl.com')
+      + card('Aadhaar Status', 'Enter 14-digit Enrollment ID from slip', 'https://myaadhaar.uidai.gov.in/CheckAadhaarStatus', 'myaadhaar.uidai.gov.in')
+      + card('Voter ID Status', 'Enter Reference ID from application', 'https://voters.eci.gov.in/', 'voters.eci.gov.in')
+      + card('GST Status', 'Enter TRN or ARN Number', 'https://www.gst.gov.in/', 'gst.gov.in')
+      + '</div>';
+}
+
+var eligStep = 0;
+var eligData = {};
+var eligQuestions = [
+    {q:'How old are you?',           key:'age',    opts:['Below 18','18-30','31-45','46-60','Above 60']},
+    {q:'Annual family income?',      key:'income', opts:['Below Rs 1 lakh','Rs 1-3 lakh','Rs 3-6 lakh','Rs 6-12 lakh','Above Rs 12 lakh']},
+    {q:'Occupation?',                key:'occ',    opts:['Farmer','Daily wage worker','Small business','Govt employee','Student','Other']},
+    {q:'Do you own a house?',        key:'house',  opts:['No house','Kaccha house','Pucca house']}
+];
+
+function renderEligibility(step) {
+    eligStep = step;
+    var content = '<div style="padding:20px;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">'
+      + '<h2 style="font-size:16px;font-weight:800;color:#1f2937;">Eligibility Checker</h2>'
+      + '<button onclick="closeModal()" style="background:#f3f4f6;border:none;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:18px;">x</button></div>';
+    if (eligStep < eligQuestions.length) {
+        var s = eligQuestions[eligStep];
+        var pct = Math.round((eligStep / eligQuestions.length) * 100);
+        content += '<div style="background:#e5e7eb;border-radius:999px;height:6px;margin-bottom:14px;">'
+                 + '<div style="background:#138808;height:6px;border-radius:999px;width:' + pct + '%;"></div></div>'
+                 + '<div style="font-size:13px;font-weight:700;color:#1f2937;margin-bottom:12px;">Q' + (eligStep+1) + '/' + eligQuestions.length + ': ' + s.q + '</div>'
+                 + '<div style="display:flex;flex-direction:column;gap:8px;">'
+                 + s.opts.map(function(o) {
+                     return '<button onclick="eligAnswer(\'' + s.key + '\',\'' + o + '\')" style="background:white;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 14px;cursor:pointer;text-align:left;font-size:12px;color:#1f2937;">' + o + '</button>';
+                 }).join('') + '</div>';
+    } else {
+        content += showEligResults();
+    }
+    content += '</div>';
+    document.getElementById('modal-content').innerHTML = content;
+}
+
+function eligAnswer(key, val) {
+    eligData[key] = val;
+    renderEligibility(eligStep + 1);
+}
+
+function showEligResults() {
+    var schemes = [];
+    var inc = eligData.income || '';
+    var occ = eligData.occ   || '';
+    var house = eligData.house || '';
+    var age = eligData.age   || '';
+    if (inc.indexOf('1 lakh') >= 0 || inc.indexOf('3 lakh') >= 0) {
+        schemes.push({name:'Ayushman Bharat PMJAY', desc:'Free health insurance Rs 5 lakh/year', url:'https://pmjay.gov.in'});
+        schemes.push({name:'PM Ujjwala Yojana',     desc:'Free LPG gas connection',              url:'https://pmuy.gov.in'});
+        schemes.push({name:'PM Jan Dhan Yojana',    desc:'Zero balance account + Rs 2L insurance',url:'https://pmjdy.gov.in'});
+    }
+    if (occ === 'Farmer') schemes.push({name:'PM Kisan Samman Nidhi', desc:'Rs 6000/year to bank account', url:'https://pmkisan.gov.in'});
+    if (occ === 'Small business' || occ === 'Daily wage worker') schemes.push({name:'PM MUDRA Yojana', desc:'Loan up to Rs 10 lakh, no collateral', url:'https://mudra.org.in'});
+    if (house === 'No house' || house === 'Kaccha house') schemes.push({name:'PM Awas Yojana', desc:'Home loan subsidy up to Rs 2.67 lakh', url:'https://pmaymis.gov.in'});
+    if (age === '18-30' || age === '31-45') schemes.push({name:'Atal Pension Yojana', desc:'Guaranteed pension Rs 1000-5000/month at 60', url:'https://npscra.nsdl.co.in'});
+    if (schemes.length === 0) return '<p style="color:#6b7280;font-size:12px;text-align:center;">No schemes matched your profile. Check individual schemes manually.</p>';
+    return '<div style="font-size:13px;font-weight:700;color:#138808;margin-bottom:10px;">You may qualify for ' + schemes.length + ' scheme(s):</div>'
+         + '<div style="display:flex;flex-direction:column;gap:8px;">'
+         + schemes.map(function(s) {
+             return '<div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center;">'
+                  + '<div><div style="font-size:12px;font-weight:700;color:#1f2937;">' + s.name + '</div>'
+                  + '<div style="font-size:10px;color:#6b7280;margin-top:2px;">' + s.desc + '</div></div>'
+                  + '<a href="' + s.url + '" target="_blank" style="background:#138808;color:white;padding:6px 10px;border-radius:8px;font-size:10px;font-weight:700;text-decoration:none;margin-left:8px;">Apply</a>'
+                  + '</div>';
+         }).join('')
+         + '<button onclick="eligData={};renderEligibility(0)" style="margin-top:10px;width:100%;background:#f3f4f6;border:none;border-radius:10px;padding:10px;cursor:pointer;font-size:12px;font-weight:600;color:#6b7280;">Check Again</button>';
+}
+
+function renderRecommender() {
+    document.getElementById('modal-content').innerHTML =
+        '<div style="padding:20px;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">'
+      + '<h2 style="font-size:16px;font-weight:800;color:#1f2937;">Scheme Recommender</h2>'
+      + '<button onclick="closeModal()" style="background:#f3f4f6;border:none;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:18px;">x</button></div>'
+      + '<p style="font-size:12px;color:#6b7280;margin-bottom:14px;">Fill your profile to find all matching government schemes.</p>'
+      + '<div style="display:flex;flex-direction:column;gap:10px;">'
+      + '<div><label style="font-size:11px;font-weight:700;color:#374151;">Your Age</label><input id="rec-age" type="number" placeholder="e.g. 28" style="width:100%;padding:9px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:12px;margin-top:4px;box-sizing:border-box;"></div>'
+      + '<div><label style="font-size:11px;font-weight:700;color:#374151;">Annual Family Income (Rs)</label><input id="rec-income" type="number" placeholder="e.g. 150000" style="width:100%;padding:9px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:12px;margin-top:4px;box-sizing:border-box;"></div>'
+      + '<div><label style="font-size:11px;font-weight:700;color:#374151;">Occupation</label>'
+      + '<select id="rec-occ" style="width:100%;padding:9px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:12px;margin-top:4px;box-sizing:border-box;">'
+      + '<option value="">Select</option><option>Farmer</option><option>Daily wage worker</option><option>Small business</option><option>Govt employee</option><option>Student</option><option>Other</option>'
+      + '</select></div>'
+      + '<div><label style="font-size:11px;font-weight:700;color:#374151;">Housing</label>'
+      + '<select id="rec-house" style="width:100%;padding:9px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:12px;margin-top:4px;box-sizing:border-box;">'
+      + '<option value="">Select</option><option>No house</option><option>Kaccha house</option><option>Pucca house</option>'
+      + '</select></div>'
+      + '<button onclick="runRecommender()" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:12px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;">Find My Schemes</button>'
+      + '</div><div id="rec-results" style="margin-top:12px;"></div></div>';
+}
+
+function runRecommender() {
+    var age    = parseInt(document.getElementById('rec-age').value)    || 0;
+    var income = parseInt(document.getElementById('rec-income').value) || 0;
+    var occ    = document.getElementById('rec-occ').value;
+    var house  = document.getElementById('rec-house').value;
+    var schemes = [];
+    if (income <= 500000) {
+        schemes.push({name:'Ayushman Bharat PMJAY',  desc:'Free health insurance Rs 5 lakh/year',          url:'https://pmjay.gov.in',         color:'#dcfce7', border:'#bbf7d0'});
+        schemes.push({name:'PM Jan Dhan Yojana',     desc:'Zero balance bank account + Rs 2L insurance',   url:'https://pmjdy.gov.in',         color:'#eff6ff', border:'#bfdbfe'});
+    }
+    if (income <= 300000) schemes.push({name:'PM Ujjwala Yojana', desc:'Free LPG gas connection for BPL families', url:'https://pmuy.gov.in', color:'#fff7ed', border:'#fed7aa'});
+    if (occ === 'Farmer') schemes.push({name:'PM Kisan Samman Nidhi', desc:'Rs 6000/year in 3 installments to bank', url:'https://pmkisan.gov.in', color:'#f0fdf4', border:'#bbf7d0'});
+    if (occ === 'Small business' || occ === 'Daily wage worker') schemes.push({name:'PM MUDRA Yojana', desc:'Loan Rs 50K to Rs 10 lakh — no collateral', url:'https://mudra.org.in', color:'#fdf4ff', border:'#e9d5ff'});
+    if ((house === 'No house' || house === 'Kaccha house') && income <= 1800000) schemes.push({name:'PM Awas Yojana', desc:'Home loan interest subsidy up to Rs 2.67 lakh', url:'https://pmaymis.gov.in', color:'#fff8f0', border:'#fed7aa'});
+    if (age >= 18 && age <= 40 && occ !== 'Govt employee') schemes.push({name:'Atal Pension Yojana', desc:'Guaranteed pension Rs 1000-5000/month after 60', url:'https://npscra.nsdl.co.in', color:'#f0f9ff', border:'#bae6fd'});
+    if (age < 10) schemes.push({name:'Sukanya Samriddhi Yojana', desc:'High-interest savings for girl child, tax-free', url:'https://www.indiapost.gov.in', color:'#fdf2f8', border:'#f0abfc'});
+    var html2 = '';
+    if (schemes.length === 0) {
+        html2 = '<p style="text-align:center;color:#6b7280;font-size:12px;padding:12px;">No matching schemes found. Try different values.</p>';
+    } else {
+        html2 = '<div style="font-size:12px;font-weight:700;color:#1f2937;margin-bottom:8px;">Found ' + schemes.length + ' scheme(s) for you:</div>'
+              + schemes.map(function(s) {
+                    return '<div style="background:' + s.color + ';border:1.5px solid ' + s.border + ';border-radius:12px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">'
+                         + '<div><div style="font-size:12px;font-weight:700;color:#1f2937;">' + s.name + '</div>'
+                         + '<div style="font-size:10px;color:#6b7280;margin-top:2px;">' + s.desc + '</div></div>'
+                         + '<a href="' + s.url + '" target="_blank" style="background:#1f2937;color:white;padding:6px 10px;border-radius:8px;font-size:10px;font-weight:700;text-decoration:none;margin-left:8px;">Apply</a>'
+                         + '</div>';
+                }).join('');
+    }
+    document.getElementById('rec-results').innerHTML = html2;
+}
+
+function showVideo() {
+    var url = serviceVideos[currentService];
+    if (url) appendMessage('Watch Tutorial on YouTube:\n' + url, 'bot', []);
+    else appendMessage('Click a service button first then tap the video button.', 'bot', []);
+}
+
+function findNearestOffice() {
+    var office = coimbatoreOffices[currentService];
+    var query  = office ? office.query : 'Government service centre Coimbatore';
+    var name   = office ? office.name  : 'Government Office';
+    if (!navigator.geolocation) {
+        appendMessage('Find ' + name + ':\nhttps://www.google.com/maps/search/' + encodeURIComponent(query), 'bot', []);
+        return;
+    }
+    appendMessage('Getting your location...', 'bot', []);
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            var lat = pos.coords.latitude;
+            var lng = pos.coords.longitude;
+            var sUrl = 'https://www.google.com/maps/search/' + encodeURIComponent(query) + '/@' + lat + ',' + lng + ',13z';
+            var dUrl = 'https://www.google.com/maps/dir/' + lat + ',' + lng + '/' + encodeURIComponent(query);
+            appendMessage('Nearest: ' + name + '\n\nSearch nearby:\n' + sUrl + '\n\nGet directions:\n' + dUrl, 'bot', []);
+        },
+        function() {
+            appendMessage('Location denied.\nhttps://www.google.com/maps/search/' + encodeURIComponent(query), 'bot', []);
+        },
+        {timeout: 8000}
+    );
+}
+
+
+// Dark mode toggle
+var darkMode = false;
+function toggleDarkMode() {
+    darkMode = !darkMode;
+    document.body.classList.toggle("dark", darkMode);
+    var btn = document.getElementById("dark-btn");
+    if(btn){ btn.textContent = darkMode ? "☀️" : "🌙"; btn.title = darkMode ? "Light Mode" : "Dark Mode"; }
+}
+
+window.onload = () => {
+    appendMessage(langConfig.en.greeting, 'bot', []);
+    checkRagStatus();
+};
+</script>
+
+<div id="smart-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;align-items:center;justify-content:center;"><div style="background:white;border-radius:20px;width:92%;max-width:460px;max-height:85vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,0.3);"><div id="modal-content"></div></div></div>
+</body>
+</html>

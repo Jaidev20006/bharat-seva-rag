@@ -1,0 +1,17 @@
+{
+  "total_chunks": 24,
+  "hardcoded": 17,
+  "scraped": 7,
+  "last_updated": "2026-03-11T22:55:13.566934",
+  "services": [
+    "driving_license",
+    "pm_yojanas",
+    "ration_card",
+    "gst",
+    "aadhaar",
+    "passport",
+    "pan_card",
+    "voter_id",
+    "digilocker"
+  ]
+}
