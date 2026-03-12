@@ -305,7 +305,7 @@
 
 <script>
 // ── Config ─────────────────────────────────────────────────────
-const RAG_URL = window.location.origin === 'null' || window.location.origin === 'file://' ? 'http://localhost:8000' : window.location.origin;
+const RAG_URL = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') ? 'http://localhost:8000' : window.location.origin;
 
 const services = {
     aadhaar_help:        { name:'Aadhaar Card',      url:'https://myaadhaar.uidai.gov.in',           icon:'🪪', btnId:'btn-aadhaar', steps:['Go to myaadhaar.uidai.gov.in','Click "Update Aadhaar"','Login with Aadhaar + OTP','Select field to update','Upload documents & pay ₹50'], suggestions:['Documents needed for Aadhaar?','Aadhaar update rejected?','How to link Aadhaar with mobile?','How to download e-Aadhaar?'] },
@@ -787,35 +787,6 @@ function applyUILanguage(lang) {
 // ═══════════════════════════════════════════════════════
 // FEATURE 1: DARK MODE
 // ═══════════════════════════════════════════════════════
-var darkMode = false;
-function toggleDarkMode() {
-    darkMode = !darkMode;
-    var btn = document.getElementById('dark-btn');
-    if (darkMode) {
-        document.documentElement.style.setProperty('--cream',   '#0f172a');
-        document.documentElement.style.setProperty('--white',   '#1e293b');
-        document.documentElement.style.setProperty('--navy',    '#f1f5f9');
-        document.documentElement.style.setProperty('--gray',    '#94a3b8');
-        document.documentElement.style.setProperty('--border',  '#334155');
-        document.documentElement.style.setProperty('--green-pale', '#0f2318');
-        document.documentElement.style.setProperty('--saffron-pale','#2d1a0a');
-        document.body.style.background = '#0f172a';
-        btn.textContent = '☀️';
-        btn.title = 'Light Mode';
-    } else {
-        document.documentElement.style.setProperty('--cream',   '#FFFDF9');
-        document.documentElement.style.setProperty('--white',   '#FFFFFF');
-        document.documentElement.style.setProperty('--navy',    '#0A1628');
-        document.documentElement.style.setProperty('--gray',    '#6B7280');
-        document.documentElement.style.setProperty('--border',  '#E5E7EB');
-        document.documentElement.style.setProperty('--green-pale','#F0FAF0');
-        document.documentElement.style.setProperty('--saffron-pale','#FFF3E8');
-        document.body.style.background = '#FFFDF9';
-        btn.textContent = '🌙';
-        btn.title = 'Dark Mode';
-    }
-}
-
 // ═══════════════════════════════════════════════════════
 // FEATURE 2: SMART TYPING ANIMATION (enhanced)
 // ═══════════════════════════════════════════════════════
